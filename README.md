@@ -2,7 +2,7 @@
 
 # jwtkit
 
-`jwtkit` یک ماژول سبک، امن و production-ready برای **ایجاد، امضا و اعتبارسنجی JWT** در Go است.
+پکیج `jwtkit` یک ماژول سبک، امن و production-ready برای **ایجاد، امضا و اعتبارسنجی JWT** در Go است.
 این پکیج برای استفاده در هر نوع پروژه Go (Gin، Fiber، Echo یا net/http) طراحی شده و از بهترین شیوه‌های Go برای **performance، security و maintainability** پیروی می‌کند.
 
 ---
