@@ -23,7 +23,7 @@
 ## 📦 نصب
 
 ```bash
-go get github.com/yourorg/jwtkit
+go get github.com/Skryldev/jwtkit
 ```
 ---
 ## 🚀 Basic Usage (HS256)
