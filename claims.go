@@ -6,7 +6,7 @@ type TokenType string
 
 const (
 	TokenAccess  TokenType = "access"
-	TokenRefresh TokenType = "refresh"
+	TokenRefresh TokenType = "refresh" // Deprecated: refresh tokens are opaque, not JWT.
 )
 
 type Claims struct {
