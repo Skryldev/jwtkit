@@ -81,53 +81,74 @@ import "github.com/Skryldev/jwtkit"
 <div dir="ltr">
 
 ```go
-func main() {
-secret := []byte(os.Geten("JWT_HS256_SECRET"))
+package main
+
+import (
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/Skryldev/jwtkit"
+)
+
+func ConfigJWT() *jwtkit.Manager {
+secret := []byte(os.Getenv("JWT_HS256_SECRET"))
 if len(secret) < 32 {
-panic("JWT_HS256_SECRET must be atleast 32 bytes")
+	panic("JWT_HS256_SECRET must be at least 32 bytes")
 }
 
-manager, err := jwtkit.New(jwtkit.Confi{
-Algorithm:       jwtkit.HS256,	
-HMACSecret:      secret,
-Issuer:          "auth-service",
-Audience:        []strin{"api-gateway"},
-AccessTokenTTL:  15 * time.Minute,
-RefreshTokenTTL: 7 * 24 * time.Hour,
-ClockSkew:       30 * time.Second,
-})
+manager, err := jwtkit.New(jwtkit.Config{
+	Algorithm:       jwtkit.HS256,
+	HMACSecret:      secret,
+	Issuer:          "auth-service",
+	Audience:        []string{"api-gateway"},
+	AccessTokenTTL:  15 * time.Minute,
+	RefreshTokenTTL: 7 * 24 * time.Hour,
+	ClockSkew:       30 * time.Second,
+	})
 
-if err != nil {
-panic(err)
-}
-
-accessToken, err := manager.CreateAccessToken("user-42", jwtkit.CustomClaims{
-	Username: "alireza",
-	Roles:    []string{"admin"},
-})
-
-if err != nil {
-panic(err)
-}
-
-fmt.Println(accessToken)
-
-claims, err := manager.ParseAccessToken(accessToken)
-
-if err != nil {
-switch {
-case errors.Is(err, jwtkit.ErrExpiredToken):
-fmt.Println("token expired")
-case errors.Is(err, jwtkit.ErrTokenNotValidYet):
-fmt.Println("token not active yet")
-default:
-fmt.Println("invalid token:", err)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create JWT manager: %v", err))
 	}
-return
+
+	return manager
 }
 
-fmt.Println("subject:", claims.Subject)
-fmt.Println("roles:", claims.Roles)
+func GenerateAccessToken(manager *jwtkit.Manager, userID, username string, roles []string) string {
+accessToken, err := manager.CreateAccessToken(userID, jwtkit.CustomClaims{
+	Username: username,
+	Roles:    roles,
+	})
+if err != nil {
+	panic(fmt.Sprintf("failed to generate access token: %v", err))
+	}
+	return accessToken
+}
+
+func ParseAndValidateToken(manager *jwtkit.Manager, token string) *jwtkit.CustomClaims {
+claims, err := manager.ParseAccessToken(token)
+	if err != nil {
+switch {
+case jwtkit.IsErrExpiredToken(err):
+	panic("token expired")
+case jwtkit.IsErrTokenNotValidYet(err):
+	panic("token not active yet")
+default:
+	panic(fmt.Sprintf("invalid token: %v", err))
+	}
+}
+	return claims
+}
+
+func main() {
+manager := ConfigJWT()
+
+accessToken := GenerateAccessToken(manager, "user-42", "alireza", []string{"admin"})
+fmt.Println("Access Token:", accessToken)
+
+claims := ParseAndValidateToken(manager, accessToken)
+fmt.Println("Subject:", claims.Subject)
+fmt.Println("Roles:", claims.Roles)
 }
 ```
 <div dir="rtl">
